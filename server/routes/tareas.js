@@ -84,7 +84,7 @@ const tareasRoutes = async (fastify, _opts) => {
         
     )
 
-    fastify.post("/tareas/:id_tarea/finalizae", {
+    fastify.post("/tareas/:id_tarea/finalizar", {
         preHandler: [fastify.authenticate],
 
         schema: {
@@ -102,19 +102,40 @@ const tareasRoutes = async (fastify, _opts) => {
     },
         async function (request, reply) {
 
+            const tarea = await tareasRepo.finalizar(request.params.id_tarea)
+
+            return reply.code(200).send(tarea)
+            
+        },
+
+    )
+
+    fastify.patch("/tareas/:id_tarea", {
+        preHandler: [fastify.authenticate],
+
+        schema: {
+            security: [{ bearerAuth: [] }],
+            tags: ["tareas"],
+            summary: "editar una tarea",
+            params:Type.Object({
+                id_tarea: Type.Integer()
+            }),
+            body: Type.Partial(tareaShcemaPost),
+            response: {
+                200: tareaSchema
+            }
+        }
+    },
+        async function (request, reply) {
+
             try {
-                
-                const tarea = await tareasRepo.finalizar(reques.params.id_tarea, Date.now())
+                const tarea = await tareasRepo.actualizar(request.params.id_tarea, request.body)
 
                 return reply.code(200).send(tarea)
-
-
-                
-                
             } catch (error) {
-                return NotFoundError
+                throw transformarErrorPostgres(error)
             }
-            
+
         },
 
     )

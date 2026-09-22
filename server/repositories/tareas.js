@@ -1,6 +1,6 @@
 
 import { myPool } from "../db/pool.js";
-import { NotFoundError } from "../errors/errores.js";
+import { ConflictError, NotFoundError } from "../errors/errores.js";
 const baseQuery = `SELECT * FROM tareas `;
 
 class TareasRepository {
@@ -51,21 +51,27 @@ class TareasRepository {
       SET campo1=$2, campo2=$3, etc, etc
       WHERE id_tarea = $1;
     `;
+
     //TODO: Corregir y completar
+    throw new Error("actualizar todavía no está hecho");
   }
 
   async finalizar(idTarea, fecha) {
     const query = `
       UPDATE tareas
-      SET terminada = $2
-      WHERE id_tarea = $1 AND terminada IS NULL;
+      SET terminada = COALESCE($2, CURRENT_TIMESTAMP)
+      WHERE id_tarea = $1 AND terminada IS NULL
+      RETURNING *;
     `;
 
-      const result = await myPool.query(query, [idTarea, fecha])
-        return result.rows[0]
-
-
-    //TODO: Completar. Ojo si la fecha viene vacía. Recuerden que CURRENT_TIMESTAMP hace referencia la fecha y hora actual
+    const result = await myPool.query(query, [idTarea, fecha])
+    if (result.rowCount !== 1) {
+      const existe = await this.obtenerPorId(idTarea)
+      if (!existe)
+        throw new NotFoundError("Tarea no encontrada.");
+      throw new ConflictError("La tarea ya está finalizada.");
+    }
+    return result.rows[0]
   }
 
   async eliminar(idTarea) {
