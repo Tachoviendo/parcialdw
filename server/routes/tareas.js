@@ -1,7 +1,7 @@
 import { tareaSchema, tareaShcemaPost } from "../schemas/tareaSchemas.js"
 import { tareasRepo } from "../repositories/tareas.js"
 import { Type } from "@sinclair/typebox"
-import { NotFoundError } from "../errors/errores.js"
+import { NotFoundError, transformarErrorPostgres } from "../errors/errores.js"
 
 const tareasRoutes = async (fastify, _opts) => {
 
@@ -73,17 +73,11 @@ const tareasRoutes = async (fastify, _opts) => {
         async function (request, reply) {
 
             try {
-                console.log(request.user.id_usuario)
-                // LES JURO QUE ANDA, crea las tareas pero en el swagger no c por no las devuelve ;(***((*&)))
                 const tarea = await tareasRepo.crear(request.user.id_usuario, request.body)
 
                 return reply.code(200).send(tarea)
-
-
-                
-                
             } catch (error) {
-                return NotFoundError
+                throw transformarErrorPostgres(error)
             }
             
         },

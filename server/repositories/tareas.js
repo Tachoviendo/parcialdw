@@ -37,7 +37,7 @@ class TareasRepository {
         const query = `
           INSERT INTO tareas (id_creador, grupo, titulo, descripcion, prioridad)
           VALUES ($1, $2, $3, $4, COALESCE($5, '1:media'))
-          RETURNING id_tarea;
+          RETURNING *;
         `;
         
         const result = await myPool.query(query, [idCreador, dto.grupo, dto.titulo, dto.descripcion, dto.prioridad])
