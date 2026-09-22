@@ -122,7 +122,32 @@ const tareasRoutes = async (fastify, _opts) => {
             }
             
         },
-        
+
+    )
+
+    fastify.delete("/tareas/:id_tarea", {
+        preHandler: [fastify.authenticate],
+
+        schema: {
+            security: [{ bearerAuth: [] }],
+            tags: ["tareas"],
+            summary: "eliminar una tarea",
+            params:Type.Object({
+                id_tarea: Type.Integer()
+            }),
+            response: {
+                204: Type.Null()
+            }
+        }
+    },
+        async function (request, reply) {
+
+            await tareasRepo.eliminar(request.params.id_tarea)
+
+            return reply.code(204).send()
+
+        },
+
     )
 
 }

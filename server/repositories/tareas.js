@@ -73,7 +73,10 @@ class TareasRepository {
       DELETE FROM tareas
       WHERE id_tarea = $1;
     `;
-    //TODO: Completar
+
+    const result = await myPool.query(query, [idTarea])
+    if (result.rowCount !== 1)
+      throw new NotFoundError("Tarea no encontrada.");
   }
 }
 
